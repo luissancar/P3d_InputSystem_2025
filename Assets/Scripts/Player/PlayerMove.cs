@@ -10,7 +10,7 @@ public class PlayerMove : MonoBehaviour
 {
     [SerializeField] private float upForce=10f;
     [SerializeField] private float speed=10f;
-    public float groundCheckDistance = 1f; // Distancia para verificar si está en el suelo
+    public float groundCheckDistance = 0.1f; // Distancia para verificar si está en el suelo
     public LayerMask groundLayer;          // Capa del suelo para verificar colisiones con Raycast
 
     private Rigidbody rb;
@@ -77,8 +77,9 @@ al suelo asignarle el layer
      
     public   bool IsGrounded()
     {
-      
+        // Ajusta la posición del rayo para que esté ligeramente más bajo
+        Vector3 rayOrigin = transform.position + Vector3.down * 0.1f;
         // Lanza un rayo desde la posición del objeto hacia abajo
-        return Physics.Raycast(transform.position, Vector3.down, groundCheckDistance, groundLayer);
+        return Physics.Raycast(rayOrigin, Vector3.down, groundCheckDistance, groundLayer);
     }
 }
