@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 17195184}
   - component: {fileID: 17195183}
   - component: {fileID: 17195182}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Plane
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -485,7 +485,7 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 80
   m_CollisionDetection: 0
 --- !u!136 &1947072079
 CapsuleCollider:
@@ -587,7 +587,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48908f0cbbfc04a48b9c1f8506dda89b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  upForce: 4
+  upForce: 10
+  speed: 10
+  groundCheckDistance: 1
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 256
 --- !u!114 &1947072084
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -629,6 +634,10 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 8ad70a2d-6cc3-44ad-8e26-47bdfe40ce83
     m_ActionName: Player/Jump[/Keyboard/space]
+  - m_PersistentCalls:
+      m_Calls: []
+    m_ActionId: b6157fa4-24f4-495b-9ae6-26ad201eadb4
+    m_ActionName: Player/Move[/Keyboard/upArrow,/Keyboard/downArrow,/Keyboard/leftArrow,/Keyboard/rightArrow]
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: 
   m_DefaultActionMap: Player
