@@ -3,81 +3,99 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+// Clase que controla el movimiento y acciones del jugador
 public class PlayerControl : MonoBehaviour
 {
-    [SerializeField] private float upForce=10f;
-    [SerializeField] private float speed=5f;
-    public float groundCheckDistance = 0.1f; // Distancia para verificar si está en el suelo
-    public LayerMask groundLayer;          // Capa del suelo para verificar colisiones con Raycast
+   
+    [SerializeField] private float speed = 5f; // Velocidad de movimiento del jugador
+    public float groundCheckDistance = 0.1f; // Distancia para verificar si el jugador está en el suelo
+    public LayerMask groundLayer; // Capa del suelo para detectar colisiones
 
-   public CharacterController player;
-    
-    
-    private PlayerInput playerInput;
-    private Vector2 input;
+    public CharacterController player; // Componente que maneja las colisiones y el movimiento del personaje
+    private Vector3 movePlayer; // Dirección en la que se debe mover el jugador
+
+    // Variables para controlar la cámara
+    public Camera mainCamera; // Cámara principal
+    private Vector3 camForward; // Dirección hacia adelante de la cámara
+    private Vector3 camRight; // Dirección hacia la derecha de la cámara
+
+    private PlayerInput playerInput; // Entrada del jugador
+    private Vector3 input; // Vector que almacena la entrada del jugador
+
+    //Gravedad
+    public float gravedad = 9.8f;
+    public float fallVelocity;
+
+    // Inicialización de variables y componentes
     void Start()
     {
-      
-        playerInput = GetComponent<PlayerInput>();
-        player = GetComponent<CharacterController>();
+        playerInput = GetComponent<PlayerInput>(); // Obtener el componente de entrada
+        player = GetComponent<CharacterController>(); // Obtener el controlador de personaje
     }
 
-    
+    // Método de actualización llamado en cada frame
     void Update()
     {
-        input=playerInput.actions["Move"].ReadValue<Vector2>();
-        player.Move(new Vector3(input.x, 0, input.y) * (speed * Time.deltaTime));
-        
-        
+        // Leer el valor de entrada del jugador (movimiento en el eje x y z)
+        Vector2 inputV2 = playerInput.actions["Move"].ReadValue<Vector2>();
+        input = new Vector3(inputV2.x, 0, inputV2.y); // Crear un vector con la entrada en x y z
+        input = Vector3.ClampMagnitude(input, 1); // Limitar la magnitud del vector a 1
+
+        // Calcular la dirección de la cámara y mover al jugador en esa dirección
+        camDirection();
+        movePlayer =
+            input.x * camRight + input.z * camForward; // Calcular el movimiento del jugador en base a la cámara
+        movePlayer = movePlayer * speed;
+        player.transform.LookAt(player.transform.position +
+                                movePlayer); // Hacer que el jugador mire hacia la dirección de movimiento
+
+        //Gravedad
+        SetGravity();
+        // Mover al jugador usando el CharacterController
+        player.Move(movePlayer * Time.deltaTime); // Mover al jugador en la dirección y velocidad establecidas
     }
 
-   
+    // Método para obtener la dirección de la cámara
+    private void camDirection()
+    {
+        camForward = mainCamera.transform.forward; // Dirección hacia adelante de la cámara
+        camRight = mainCamera.transform.right; // Dirección hacia la derecha de la cámara
 
+        camForward.y = 0; // Ignorar el componente y para que la cámara no afecte la altura
+        camRight.y = 0;
+
+        camForward = camForward.normalized; // Normalizar el vector para mantener la misma dirección
+        camRight = camRight.normalized;
+    }
+
+    // Método para el salto
     public void Jump(InputAction.CallbackContext context)
     {
-        if (IsGrounded())
+        Debug.Log("Jump");
+        if (player.isGrounded) // Verificar si el jugador está en el suelo
         {
-            if (context.performed)
+            if (context.performed) // Si la acción de salto se realizó
             {
-              
-                Debug.Log("Jump");
+                Debug.Log("Jump2"); // Imprimir en consola cuando el jugador salta
             }
         }
-            
-        Debug.Log(context.phase);
+
+        Debug.Log(context.phase); // Imprimir el estado de la acción en la consola
     }
-    
-    
-    /*
-     * Para crear una capa específica para el suelo en Unity y seleccionarla en el Inspector, sigue estos pasos:
 
-Crear la capa de suelo:
+  
 
-En la esquina superior derecha de la ventana de Unity, ve a "Layers" y haz clic en el menú desplegable.
-Selecciona "Edit Layers...".
-En la sección "User Layers", elige un espacio vacío (por ejemplo, Layer 8) y escribe el nombre de la nueva capa, como "Ground" o "Suelo".
-Una vez que la hayas nombrado, la capa estará disponible para asignarse a objetos.
-Asignar la capa al suelo:
-
-Selecciona el objeto del suelo en la jerarquía (por ejemplo, el terreno o cualquier objeto que desees usar como superficie para que el personaje pueda saltar).
-En el Inspector, busca la opción "Layer" en la parte superior de la ventana.
-Haz clic en el menú desplegable y selecciona la capa que acabas de crear ("Ground" o "Suelo").
-Cuando Unity pregunte si deseas asignar esta capa a todos los objetos hijos, selecciona "Yes" si quieres que todos los objetos anidados en el suelo tengan la misma capa.
-Configurar el script para detectar la capa de suelo:
-
-En tu script, verás la variable groundLayer. Esta variable de tipo LayerMask permite que selecciones la capa de suelo desde el Inspector sin tener que escribir código adicional.
-Selecciona el objeto que tiene el script (por ejemplo, el jugador o el objeto que salta).
-En el Inspector, busca la sección del script y encuentra la variable groundLayer.
-Selecciona el nuevo layer ("Ground" o "Suelo") desde el menú desplegable de groundLayer.
-
-al suelo asignarle el layer 
-     * */
-     
-    public   bool IsGrounded()
+    private void SetGravity()
     {
-        // Ajusta la posición del rayo para que esté ligeramente más bajo
-        Vector3 rayOrigin = transform.position + Vector3.down * 0.1f;
-        // Lanza un rayo desde la posición del objeto hacia abajo
-        return Physics.Raycast(rayOrigin, Vector3.down, groundCheckDistance, groundLayer);
+        if (player.isGrounded)
+        {
+            fallVelocity = -gravedad * Time.deltaTime;
+        }
+        else
+        {
+            fallVelocity -= gravedad * Time.deltaTime;
+        }
+        
+        movePlayer.y = fallVelocity;
     }
 }
