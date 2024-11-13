@@ -6,10 +6,7 @@ using UnityEngine.InputSystem;
 // Clase que controla el movimiento y acciones del jugador
 public class PlayerControl : MonoBehaviour
 {
-   
     [SerializeField] private float speed = 5f; // Velocidad de movimiento del jugador
-    public float groundCheckDistance = 0.1f; // Distancia para verificar si el jugador está en el suelo
-    public LayerMask groundLayer; // Capa del suelo para detectar colisiones
 
     public CharacterController player; // Componente que maneja las colisiones y el movimiento del personaje
     private Vector3 movePlayer; // Dirección en la que se debe mover el jugador
@@ -26,6 +23,11 @@ public class PlayerControl : MonoBehaviour
     public float gravedad = 9.8f;
     public float fallVelocity;
 
+
+    //Salto
+    public float jumpVelocity;
+    public bool isGro;
+
     // Inicialización de variables y componentes
     void Start()
     {
@@ -36,6 +38,7 @@ public class PlayerControl : MonoBehaviour
     // Método de actualización llamado en cada frame
     void Update()
     {
+        isGro = player.isGrounded;
         // Leer el valor de entrada del jugador (movimiento en el eje x y z)
         Vector2 inputV2 = playerInput.actions["Move"].ReadValue<Vector2>();
         input = new Vector3(inputV2.x, 0, inputV2.y); // Crear un vector con la entrada en x y z
@@ -51,6 +54,8 @@ public class PlayerControl : MonoBehaviour
 
         //Gravedad
         SetGravity();
+        //Salto
+      //  Jump2();
         // Mover al jugador usando el CharacterController
         player.Move(movePlayer * Time.deltaTime); // Mover al jugador en la dirección y velocidad establecidas
     }
@@ -68,22 +73,35 @@ public class PlayerControl : MonoBehaviour
         camRight = camRight.normalized;
     }
 
+
+    public void Jump2()
+    {
+        Debug.Log("jump2  ");
+        if (player.isGrounded && Input.GetKeyDown(KeyCode.Space))
+        {
+            fallVelocity = jumpVelocity;
+            movePlayer.y = fallVelocity;
+        }
+    }
+
     // Método para el salto
     public void Jump(InputAction.CallbackContext context)
     {
-        Debug.Log("Jump");
-        if (player.isGrounded) // Verificar si el jugador está en el suelo
-        {
-            if (context.performed) // Si la acción de salto se realizó
-            {
-                Debug.Log("Jump2"); // Imprimir en consola cuando el jugador salta
-            }
-        }
+        // Debug.Log("Jump1");
+         if (player.isGrounded) // Verificar si el jugador está en el suelo
+         {
+             Debug.Log("Jump2");
+             if (context.performed) // Si la acción de salto se realizó
+             {
+                 Debug.Log("Jump3");
+                 fallVelocity = jumpVelocity;
+                 movePlayer.y = fallVelocity;
+             }
+         }
 
-        Debug.Log(context.phase); // Imprimir el estado de la acción en la consola
+         Debug.Log(context.phase); // Imprimir el estado de la acción en la consola*/
     }
 
-  
 
     private void SetGravity()
     {
@@ -95,7 +113,7 @@ public class PlayerControl : MonoBehaviour
         {
             fallVelocity -= gravedad * Time.deltaTime;
         }
-        
+
         movePlayer.y = fallVelocity;
     }
 }
